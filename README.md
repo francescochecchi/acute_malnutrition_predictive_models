@@ -3,6 +3,7 @@
 ## Notes on data and R analysis code
 23 December 2021  
 Francesco Checchi, Severine Frison, Abdihamid Warsame
+
 Department of Infectious Disease Epidemiology  
 Faculty of Epidemiology and Population Health, Keppel St  
 London School of Hygiene and Tropical Medicine  
