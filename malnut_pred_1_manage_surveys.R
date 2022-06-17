@@ -235,11 +235,11 @@ for (i in 1:nrow(surveys) ) {
       fit <- svyglm(as.formula(paste(j, "~", "NULL", sep = " ")), survey_design, family = "binomial")
       
       # compute point estimate and 95%CIs      
-      surveys[i, paste(j, "_est", sep = "")] <- exp(summary(fit)$coefficients[[1]])
+      surveys[i, paste(j, "_est", sep = "")] <- inv.logit(summary(fit)$coefficients[[1]])
       surveys[i, paste(j, "_lci", sep = "")] <- 
-        exp(summary(fit)$coefficients[[1]] - 1.96 * summary(fit)$coefficients[[2]] )
+        inv.logit(summary(fit)$coefficients[[1]] - 1.96 * summary(fit)$coefficients[[2]] )
       surveys[i, paste(j, "_uci", sep = "")] <- 
-        exp(summary(fit)$coefficients[[1]] + 1.96 * summary(fit)$coefficients[[2]] )
+        inv.logit(summary(fit)$coefficients[[1]] + 1.96 * summary(fit)$coefficients[[2]] )
     }
     
     # Compute the proportion of flags

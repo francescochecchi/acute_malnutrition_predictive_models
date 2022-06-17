@@ -229,7 +229,7 @@ f_cv_metrics <- function(f_fit, f_data, f_part_unit, f_k_folds, f_thresholds, f_
     ses <- unlist(predict(cv_fit, newdata = folds[[i]], se.fit = TRUE, allow.new.levels = TRUE)["se.fit"])
 
     x1 <- t(apply(cbind(lambdas, ses), 1, FUN = function(x) {rnorm(1000, mean = x[1], sd = x[2]) } ) ) 
-    if (as.character(family(f_fit))[1] != "gaussian") {x1 <- exp(x1)}
+    if (as.character(family(f_fit))[1] != "gaussian") {x1 <- inv.logit(x1)}
     x1 <- t(apply(x1, 1, sort) )
     x2 <- t(apply(x1, 1, quantile, c(0.025, 0.10, 0.90, 0.975)))
     x2 <- data.frame(part_units, tms, predict(cv_fit, newdata = folds[[i]], type = "response", 
@@ -290,11 +290,11 @@ f_cv_metrics <- function(f_fit, f_data, f_part_unit, f_k_folds, f_thresholds, f_
       fit <- svyglm(as.formula(paste(f_y_hat, "~", "NULL", sep = " ")), survey_design, family = "binomial")
       
       # compute point estimate and CIs      
-      obs[i, "obs"] <- exp(summary(fit)$coefficients[[1]] )
-      obs[i, "obs_l95"] <- exp(summary(fit)$coefficients[[1]] - 1.96 * summary(fit)$coefficients[[2]] )
-      obs[i, "obs_u95"] <- exp(summary(fit)$coefficients[[1]] + 1.96 * summary(fit)$coefficients[[2]] )
-      obs[i, "obs_l80"] <- exp(summary(fit)$coefficients[[1]] - 1.28 * summary(fit)$coefficients[[2]] )
-      obs[i, "obs_u80"] <- exp(summary(fit)$coefficients[[1]] + 1.28 * summary(fit)$coefficients[[2]] )
+      obs[i, "obs"] <- inv.logit(summary(fit)$coefficients[[1]] )
+      obs[i, "obs_l95"] <- inv.logit(summary(fit)$coefficients[[1]] - 1.96 * summary(fit)$coefficients[[2]] )
+      obs[i, "obs_u95"] <- inv.logit(summary(fit)$coefficients[[1]] + 1.96 * summary(fit)$coefficients[[2]] )
+      obs[i, "obs_l80"] <- inv.logit(summary(fit)$coefficients[[1]] - 1.28 * summary(fit)$coefficients[[2]] )
+      obs[i, "obs_u80"] <- inv.logit(summary(fit)$coefficients[[1]] + 1.28 * summary(fit)$coefficients[[2]] )
     }
         
   }
@@ -487,11 +487,11 @@ f_cv_metrics_rf <- function(f_fit, f_data_agg, f_data, f_part_unit, f_k_folds, f
       fit <- svyglm(as.formula(paste(f_y_hat, "~", "NULL", sep = " ")), survey_design, family = "binomial")
       
       # compute point estimate and CIs      
-      obs[i, "obs"] <- exp(summary(fit)$coefficients[[1]] )
-      obs[i, "obs_l95"] <- exp(summary(fit)$coefficients[[1]] - 1.96 * summary(fit)$coefficients[[2]] )
-      obs[i, "obs_u95"] <- exp(summary(fit)$coefficients[[1]] + 1.96 * summary(fit)$coefficients[[2]] )
-      obs[i, "obs_l80"] <- exp(summary(fit)$coefficients[[1]] - 1.28 * summary(fit)$coefficients[[2]] )
-      obs[i, "obs_u80"] <- exp(summary(fit)$coefficients[[1]] + 1.28 * summary(fit)$coefficients[[2]] )
+      obs[i, "obs"] <- inv.logit(summary(fit)$coefficients[[1]] )
+      obs[i, "obs_l95"] <- inv.logit(summary(fit)$coefficients[[1]] - 1.96 * summary(fit)$coefficients[[2]] )
+      obs[i, "obs_u95"] <- inv.logit(summary(fit)$coefficients[[1]] + 1.96 * summary(fit)$coefficients[[2]] )
+      obs[i, "obs_l80"] <- inv.logit(summary(fit)$coefficients[[1]] - 1.28 * summary(fit)$coefficients[[2]] )
+      obs[i, "obs_u80"] <- inv.logit(summary(fit)$coefficients[[1]] + 1.28 * summary(fit)$coefficients[[2]] )
     }
         
   }
@@ -688,13 +688,13 @@ f_holdout_metrics <- function(f_fit, f_data_holdout, f_part_unit, f_thresholds, 
       lambdas + 1.28 * sqrt(tvar1), 
       lambdas + 1.96 * sqrt(tvar1)
     )
-    if (as.character(family(f_fit))[1] != "gaussian") {x2 <- exp(x2)}
+    if (as.character(family(f_fit))[1] != "gaussian") {x2 <- inv.logit(x2)}
   }
   
   if (! f_part_unit %in% all.vars(formula(f_fit)) ) {
     ses <- unlist(predict(f_fit, newdata = f_data_holdout, se.fit = TRUE, allow.new.levels = TRUE)["se.fit"])
     x1 <- t(apply(cbind(lambdas, ses), 1, FUN = function(x) {rnorm(1000, mean = x[1], sd = x[2]) } ) ) 
-    if (as.character(family(f_fit))[1] != "gaussian") {x1 <- exp(x1)}
+    if (as.character(family(f_fit))[1] != "gaussian") {x1 <- inv.logit(x1)}
     x1 <- t(apply(x1, 1, sort) )
     x2 <- t(apply(x1, 1, quantile, c(0.025, 0.10, 0.90, 0.975)))
   }
@@ -705,7 +705,7 @@ f_holdout_metrics <- function(f_fit, f_data_holdout, f_part_unit, f_thresholds, 
   pred <- aggregate(pred[, c("pred", "pred_l95", "pred_l80", "pred_u80", "pred_u95")], 
     by = pred[, c(f_part_unit, "tm")], FUN = mean, na.rm = TRUE)
   colnames(pred)[c(1,2)] <- c(f_part_unit, "tm")
-  if (as.character(family(f_fit))[1] != "gaussian") {pred[, "pred"] <- exp(pred[, "pred"])}
+  if (as.character(family(f_fit))[1] != "gaussian") {pred[, "pred"] <- inv.logit(pred[, "pred"])}
   
   # Aggregate observed data by partition unit and compute its cluster-adjusted confidence intervals
     # unique instances of partition units
@@ -753,11 +753,11 @@ f_holdout_metrics <- function(f_fit, f_data_holdout, f_part_unit, f_thresholds, 
       fit <- svyglm(as.formula(paste(f_y_hat, "~", "NULL", sep = " ")), survey_design, family = "binomial")
       
       # compute point estimate and CIs      
-      obs[i, "obs"] <- exp(summary(fit)$coefficients[[1]] )
-      obs[i, "obs_l95"] <- exp(summary(fit)$coefficients[[1]] - 1.96 * summary(fit)$coefficients[[2]] )
-      obs[i, "obs_u95"] <- exp(summary(fit)$coefficients[[1]] + 1.96 * summary(fit)$coefficients[[2]] )
-      obs[i, "obs_l80"] <- exp(summary(fit)$coefficients[[1]] - 1.28 * summary(fit)$coefficients[[2]] )
-      obs[i, "obs_u80"] <- exp(summary(fit)$coefficients[[1]] + 1.28 * summary(fit)$coefficients[[2]] )
+      obs[i, "obs"] <- inv.logit(summary(fit)$coefficients[[1]] )
+      obs[i, "obs_l95"] <- inv.logit(summary(fit)$coefficients[[1]] - 1.96 * summary(fit)$coefficients[[2]] )
+      obs[i, "obs_u95"] <- inv.logit(summary(fit)$coefficients[[1]] + 1.96 * summary(fit)$coefficients[[2]] )
+      obs[i, "obs_l80"] <- inv.logit(summary(fit)$coefficients[[1]] - 1.28 * summary(fit)$coefficients[[2]] )
+      obs[i, "obs_u80"] <- inv.logit(summary(fit)$coefficients[[1]] + 1.28 * summary(fit)$coefficients[[2]] )
     }
         
   }
@@ -906,11 +906,11 @@ f_holdout_metrics_rf <- function(f_fit, f_data_holdout_agg, f_data_holdout, f_pa
       fit <- svyglm(as.formula(paste(f_y_hat, "~", "NULL", sep = " ")), survey_design, family = "binomial")
       
       # compute point estimate and CIs      
-      obs[i, "obs"] <- exp(summary(fit)$coefficients[[1]] )
-      obs[i, "obs_l95"] <- exp(summary(fit)$coefficients[[1]] - 1.96 * summary(fit)$coefficients[[2]] )
-      obs[i, "obs_u95"] <- exp(summary(fit)$coefficients[[1]] + 1.96 * summary(fit)$coefficients[[2]] )
-      obs[i, "obs_l80"] <- exp(summary(fit)$coefficients[[1]] - 1.28 * summary(fit)$coefficients[[2]] )
-      obs[i, "obs_u80"] <- exp(summary(fit)$coefficients[[1]] + 1.28 * summary(fit)$coefficients[[2]] )
+      obs[i, "obs"] <- inv.logit(summary(fit)$coefficients[[1]] )
+      obs[i, "obs_l95"] <- inv.logit(summary(fit)$coefficients[[1]] - 1.96 * summary(fit)$coefficients[[2]] )
+      obs[i, "obs_u95"] <- inv.logit(summary(fit)$coefficients[[1]] + 1.96 * summary(fit)$coefficients[[2]] )
+      obs[i, "obs_l80"] <- inv.logit(summary(fit)$coefficients[[1]] - 1.28 * summary(fit)$coefficients[[2]] )
+      obs[i, "obs_u80"] <- inv.logit(summary(fit)$coefficients[[1]] + 1.28 * summary(fit)$coefficients[[2]] )
     }
         
   }
@@ -1074,7 +1074,7 @@ f_plot_prev <- function(f_country, f_y_hat, f_training, f_cv_out, f_holdout, f_m
     }    
   }
   error_labs <- paste("\u00B1", errors[1:3] * 100, "%", sep = "")
-  max_error <- max(errors)
+#  max_error <- max(errors)
 
   if (f_model_type == "glm") {colours <- c(palette_cb[7], palette_cb[4])}
   if (f_model_type == "rf") {colours <- c(palette_cb[6], palette_cb[8])}
@@ -1089,7 +1089,8 @@ f_plot_prev <- function(f_country, f_y_hat, f_training, f_cv_out, f_holdout, f_m
     df <- rbind(df, c(NA, NA, 0, NA, 0), c(NA, NA, lim_min, NA, lim_min) , c(NA, NA, lim_max, NA, lim_max))
     for (j in 1:length(errors[3:1]) ) {df[, paste("y_min", j, sep = "")] <- df[, "y_perfect"] - errors[j]}
     for (j in 1:length(errors[1:3]) ) {df[, paste("y_max", j, sep = "")] <- df[, "y_perfect"] + errors[j]}
-    text_angle <- 45 * abs(lim_max - lim_min) / (abs(lim_max - lim_min) + max(errors))
+    # text_angle <- 45 * abs(lim_max - lim_min) / (abs(lim_max - lim_min) + max(errors))
+    text_angle <- 45
 
     # plot
     plot <- ggplot(df) +
@@ -1101,11 +1102,14 @@ f_plot_prev <- function(f_country, f_y_hat, f_training, f_cv_out, f_holdout, f_m
       geom_ribbon(aes(ymin = y_min2, ymax = y_max2, x = observed), fill = colours[2], alpha = 0.2) +
       geom_ribbon(aes(ymin = y_min1, ymax = y_max1, x = observed), fill = colours[2], alpha = 0.3) +
       theme(axis.title = element_text(colour="grey20", size = 9)) +
-      annotate("text", x = lim_max - breaks_step, y = lim_max - breaks_step + errors[1] / 2, 
+      # annotate("text", x = lim_max - breaks_step, y = lim_max - breaks_step + errors[1] / 2, 
+      annotate("text", x = lim_max - breaks_step - errors[1] / 2, y = lim_max - breaks_step, 
         label = error_labs[1], colour = colours[2], size = 3, angle = text_angle) +
-      annotate("text", x = lim_max - breaks_step, y = lim_max - breaks_step + (errors[2] + errors[1]) / 2, 
+      # annotate("text", x = lim_max - breaks_step, y = lim_max - breaks_step + (errors[2] + errors[1]) / 2, 
+      annotate("text", x = lim_max - breaks_step - (errors[1] + errors[2]) / 2, y = lim_max - breaks_step, 
         label = error_labs[2], colour = colours[2], size = 3, angle = text_angle) +
-      annotate("text", x = lim_max - breaks_step, y = lim_max - breaks_step + (errors[3] + errors[2]) / 2,
+      # annotate("text", x = lim_max - breaks_step, y = lim_max - breaks_step + (errors[3] + errors[2]) / 2,
+      annotate("text", x = lim_max - breaks_step - (errors[3] + errors[2]) / 2, y = lim_max - breaks_step,
         label = error_labs[3], colour = colours[2], size = 3, angle = text_angle) +
       geom_hline(yintercept = thresholds, linetype = c("dotted", "dashed", "twodash")[1:length(thresholds)], 
         alpha = 0.5, size = 1, colour = colours[1] ) +
@@ -1118,9 +1122,11 @@ f_plot_prev <- function(f_country, f_y_hat, f_training, f_cv_out, f_holdout, f_m
           breaks = seq(lim_min, lim_max, by = breaks_step),
           expand = c(0, 0), labels = scales::percent_format(accuracy = 1) ) +
         scale_y_continuous("predicted",
-          breaks = seq(lim_min, lim_max + max_error, by = breaks_step),
+          # breaks = seq(lim_min, lim_max + max_error, by = breaks_step),
+          breaks = seq(lim_min, lim_max, by = breaks_step),
           expand = c(0, 0), labels = scales::percent_format(accuracy = 1) ) +
-        coord_cartesian(ylim = c(lim_min, lim_max + max_error), xlim = c(lim_min, lim_max)) 
+        #coord_cartesian(ylim = c(lim_min, lim_max + max_error), xlim = c(lim_min, lim_max))
+        coord_cartesian(ylim = c(lim_min, lim_max), xlim = c(lim_min, lim_max))
     }    
     
     if (! f_y_hat %in% c("samz", "gamz", "samm", "gamm") ) { 
@@ -1129,9 +1135,11 @@ f_plot_prev <- function(f_country, f_y_hat, f_training, f_cv_out, f_holdout, f_m
           breaks = seq(round(lim_min, 1), round(lim_max, 1), by = breaks_step),
           expand = c(0, 0) ) +
         scale_y_continuous("predicted",
-          breaks = seq(round(lim_min, 1), round(lim_max + max_error, 1), by = breaks_step),
+          # breaks = seq(round(lim_min, 1), round(lim_max + max_error, 1), by = breaks_step),
+          breaks = seq(round(lim_min, 1), round(lim_max, 1), by = breaks_step),
           expand = c(0, 0) ) +
-        coord_cartesian(ylim = c(lim_min, lim_max + max_error), xlim = c(lim_min, lim_max))         
+        # coord_cartesian(ylim = c(lim_min, lim_max + max_error), xlim = c(lim_min, lim_max))         
+        coord_cartesian(ylim = c(lim_min, lim_max), xlim = c(lim_min, lim_max))
     }
     
     print(plot)
@@ -1149,7 +1157,7 @@ f_plot_prev <- function(f_country, f_y_hat, f_training, f_cv_out, f_holdout, f_m
       font.label = list(size = 10, colour = "grey20", face = "plain")
       )
     print(plot)
-    ggsave(paste(f_country, "_", f_y_hat, "_est_performance.", f_model_type, ".png", sep=""),
+    ggsave(paste(f_country, "_", f_y_hat, "_est_performance_", f_model_type, ".png", sep=""),
       height = 10, width = 30, units = "cm", dpi = "print")
   }
 
@@ -1161,7 +1169,7 @@ f_plot_prev <- function(f_country, f_y_hat, f_training, f_cv_out, f_holdout, f_m
       font.label = list(size = 10, colour = "grey20", face = "plain")
       )
     print(plot)
-    ggsave(paste(f_country, "_", f_y_hat, "_est_performance.", f_model_type, ".png", sep=""),
+    ggsave(paste(f_country, "_", f_y_hat, "_est_performance_", f_model_type, ".png", sep=""),
       height = 10, width = 20, units = "cm", dpi = "print")
   }
   
@@ -1189,7 +1197,7 @@ f_predict <- function(f_fit, f_vcov_cl, f_newdata, f_se_fit) {
     
   # generate predictions on the desired scale, as well as standard errors for the predictions
   if (family(fit_glm)[2] == "log") {fit <- as.vector(m_mat %*% f_fit$coef)}
-  if (family(fit_glm)[2] == "linear") {fit <- exp(as.vector(m_mat %*% f_fit$coef))}
+  if (family(fit_glm)[2] == "linear") {fit <- inv.logit(as.vector(m_mat %*% f_fit$coef))}
   se_fit <- sqrt(diag(m_mat %*% f_vcov_cl %*% t(m_mat)))
     
   # return predictions or standard errors, as desired      
