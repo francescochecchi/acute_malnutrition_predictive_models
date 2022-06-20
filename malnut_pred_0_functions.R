@@ -1055,11 +1055,13 @@ f_plot_prev <- function(f_country, f_y_hat, f_training, f_cv_out, f_holdout, f_m
     errors <- c(0.01, 0.02, 0.03) # note these will be absolute percentage errors
     thresholds <- c(0.02, 0.05)
     breaks_step <- 0.01
+    error_labs <- paste("\u00B1", errors[1:3] * 100, "%", sep = "")
   }
   if (f_y_hat %in% c("gamz", "gamm")) {
     errors <- c(0.02, 0.05, 0.10) # note these will be absolute percentage errors
     thresholds <- c(0.15, 0.20)
     breaks_step <- 0.05
+    error_labs <- paste("\u00B1", errors[1:3] * 100, "%", sep = "")
   }
   if (! f_y_hat %in% c("samz", "gamz", "samm", "gamm") ) {
     if (f_y_hat == "muac") {
@@ -1072,8 +1074,9 @@ f_plot_prev <- function(f_country, f_y_hat, f_training, f_cv_out, f_holdout, f_m
       errors <- c(0.05, 0.10, 0.20)
       breaks_step <- round(abs(lim_max - lim_min) / 10, digits = 1)
     }    
+    error_labs <- paste("\u00B1", errors[1:3], sep = "")
   }
-  error_labs <- paste("\u00B1", errors[1:3] * 100, "%", sep = "")
+  
 #  max_error <- max(errors)
 
   if (f_model_type == "glm") {colours <- c(palette_cb[7], palette_cb[4])}
