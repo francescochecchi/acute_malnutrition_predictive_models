@@ -421,7 +421,7 @@ f_cv_metrics_rf <- function(f_fit, f_data_agg, f_data, f_part_unit, f_k_folds, f
     pred_i <- try(predict(cv_fit, data = folds[[i]], type = "se", se.method = "jack") )
       # if fold prediction doesn't work (usually because of new levels), record this and skip to next fold
       if (class(pred_i) == "try-error") {folds_ok[i] <- 0; next}
-    x2 <- c(
+    x2 <- cbind(
       part_units,
       tms,
       pred_i$predictions, 
@@ -613,7 +613,7 @@ f_cv_rf <- function(f_fit, f_data, f_part_unit, f_k_folds) {
     pred_i <- try(predict(cv_fit, data = folds[[i]]) )
       # if fold prediction doesn't work (usually because of new levels), record this and skip to next fold
       if (class(pred_i) == "try-error") {folds_ok[i] <- 0; next}
-    x2 <- c(
+    x2 <- cbind(
       part_units,
       tms,
       ys,
