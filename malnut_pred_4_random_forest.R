@@ -1,5 +1,5 @@
 #..........................................................................................
-### +++++++++++++ SMALL-AREA ESTIMATION OF CRISIS-ATTRIBUTABLE MORTALITY ++++++++++++++ ###
+### +++++++++++++++ SMALL-AREA PREDICTION OF ACUTE MALNUTRITION BURDEN ++++++++++++++++ ###
 #..........................................................................................
 
 #..........................................................................................
@@ -264,7 +264,7 @@
       colnames(pred_h) <- c(part_unit, "tm", "observed", "predicted")
 
     # Plot predictions
-    f_plot_prev("som", y_hat, pred_t, pred_cv, pred_h, "rf")
+    f_plot_prev(country, y_hat, pred_t, pred_cv, pred_h, "rf")
   
     # Compute MSEs
     mses <- c(
@@ -275,7 +275,7 @@
     names(mses) <- c("mse_training", "mse_cv", "mse_holdout")
     
     # Generate performance metrics on cross-validation and on holdout dataset
-    thresholds <- as.numeric(unlist(strsplit(thresholds, ",")))
+    if (typeof(thresholds) == "character") {thresholds <- as.numeric(unlist(strsplit(thresholds, ",")))}
     cv_metrics <- f_cv_metrics_rf(fit, df_t, ch_obs_t, part_unit, k_folds, thresholds, TRUE)
     holdout_metrics <- f_holdout_metrics_rf(fit, df_h, ch_obs_h, part_unit, thresholds, TRUE)
     
