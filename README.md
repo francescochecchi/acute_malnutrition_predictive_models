@@ -1,4 +1,5 @@
 ## Can we predict the burden of acute malnutrition in crisis-affected countries? Findings from Somalia and South Sudan
+Checchi et al. (2022) https://bmcnutr.biomedcentral.com/articles/10.1186/s40795-022-00563-2 
 
 ## Notes on data and R analysis code
 23 December 2021  
